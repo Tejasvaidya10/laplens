@@ -1,0 +1,108 @@
+# Deploy Backend
+# Builds Docker image and optionally deploys to Oracle Cloud VM
+
+name: Deploy Backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/api/**"
+      - ".github/workflows/deploy-backend.yml"
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/api
+
+jobs:
+  # ==========================================================================
+  # Build and Push Docker Image
+  # ==========================================================================
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      packages: write
+    
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: apps/api
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ==========================================================================
+  # Deploy to Oracle Cloud VM (Optional)
+  # ==========================================================================
+  deploy:
+    name: Deploy to Oracle Cloud
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    
+    # Uncomment and configure to enable auto-deployment
+    # environment: production
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      # Uncomment the following steps to enable auto-deployment to Oracle VM
+      # 
+      # - name: Deploy to Oracle VM
+      #   uses: appleboy/ssh-action@v1.0.0
+      #   with:
+      #     host: ${{ secrets.ORACLE_HOST }}
+      #     username: ubuntu
+      #     key: ${{ secrets.ORACLE_SSH_KEY }}
+      #     script: |
+      #       cd ~/pitlane-telemetry
+      #       git pull origin main
+      #       docker-compose -f infra/docker-compose.prod.yml pull
+      #       docker-compose -f infra/docker-compose.prod.yml up -d
+      #       docker system prune -f
+      
+      - name: Deployment instructions
+        run: |
+          echo "🚀 Docker image built and pushed!"
+          echo ""
+          echo "To deploy manually on your Oracle VM:"
+          echo "  1. SSH into your VM"
+          echo "  2. Pull the latest image:"
+          echo "     docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          echo "  3. Restart the container:"
+          echo "     docker-compose -f infra/docker-compose.prod.yml up -d"
+          echo ""
+          echo "Or enable auto-deployment by uncommenting the deploy step in this workflow."
