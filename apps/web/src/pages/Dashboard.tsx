@@ -1,22 +1,19 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { SessionSelector } from '@/components/selectors/SessionSelector';
-import { DriverSelector } from '@/components/selectors/DriverSelector';
 import { SpeedChart, ThrottleBrakeChart, GearChart, DeltaChart } from '@/components/charts';
 import { api } from '@/lib/api';
+import { useSessionStore } from '@/hooks/use-session-store';
 import { Loader2 } from 'lucide-react';
 
 export function Dashboard() {
-  const [season, setSeason] = useState<number | null>(null);
-  const [event, setEvent] = useState<string | null>(null);
-  const [session, setSession] = useState<string | null>(null);
-  const [driverA, setDriverA] = useState<string | null>(null);
-  const [driverB, setDriverB] = useState<string | null>(null);
+  const { season, event, session, driverA, driverB } = useSessionStore();
 
-  const { data: telemetry, isLoading, error, refetch } = useQuery({
+  const canCompare = season && event && session && driverA && driverB;
+
+  const { data: telemetry, isLoading, error, refetch, isFetched } = useQuery({
     queryKey: ['telemetry', season, event, session, driverA, driverB],
     queryFn: () => api.compareTelemetry({
       season: season!,
@@ -25,54 +22,39 @@ export function Dashboard() {
       driverA: driverA!,
       driverB: driverB!,
     }),
-    enabled: !!(season && event && session && driverA && driverB),
+    enabled: false,
   });
 
-  const canCompare = season && event && session && driverA && driverB;
+  const handleCompare = () => {
+    if (canCompare) {
+      refetch();
+    }
+  };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="space-y-6">
       <h1 className="text-3xl font-bold">LapLens - F1 Telemetry Analysis</h1>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Select Session</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SessionSelector
-            season={season}
-            event={event}
-            session={session}
-            onSeasonChange={setSeason}
-            onEventChange={setEvent}
-            onSessionChange={setSession}
-          />
-        </CardContent>
-      </Card>
-
-      {session && (
+      {!canCompare && (
         <Card>
-          <CardHeader>
-            <CardTitle>Select Drivers</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DriverSelector
-              season={season!}
-              event={event!}
-              session={session}
-              driverA={driverA}
-              driverB={driverB}
-              onDriverAChange={setDriverA}
-              onDriverBChange={setDriverB}
-            />
-            <Button 
-              className="mt-4" 
-              onClick={() => refetch()}
-              disabled={!canCompare || isLoading}
-            >
-              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Compare
-            </Button>
+          <CardContent className="pt-6">
+            <p className="text-muted-foreground">
+              Select a season, event, session, and two drivers from the sidebar to compare telemetry.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {canCompare && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <p>Ready to compare <strong>{driverA}</strong> vs <strong>{driverB}</strong></p>
+              <Button onClick={handleCompare} disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Compare Telemetry
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -80,7 +62,7 @@ export function Dashboard() {
       {error && (
         <Card className="border-red-500">
           <CardContent className="pt-6">
-            <p className="text-red-500">Error loading telemetry: {(error as Error).message}</p>
+            <p className="text-red-500">Error: {(error as Error).message}</p>
           </CardContent>
         </Card>
       )}
