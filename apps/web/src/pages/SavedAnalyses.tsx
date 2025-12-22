@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth-context';
 import { apiClient } from '@/lib/api';
 import { Trash2, ExternalLink, Calendar, Users } from 'lucide-react';
 
-export default function SavedAnalyses() {
+export function SavedAnalyses() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [analyses, setAnalyses] = useState<any[]>([]);
