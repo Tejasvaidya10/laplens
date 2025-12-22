@@ -8,20 +8,26 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts'
-import type { TelemetryComparison } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface SpeedChartProps {
-  data: TelemetryComparison
+  data: any
   height?: number
 }
 
 export function SpeedChart({ data, height = 300 }: SpeedChartProps) {
+  if (!data?.driverA?.telemetry || !data?.driverB?.telemetry) {
+    return <div>No telemetry data available</div>
+  }
+
+  const driverACode = data.driverA.driver || 'Driver A'
+  const driverBCode = data.driverB.driver || 'Driver B'
+
   // Merge telemetry data for chart
-  const chartData = data.driverA.telemetry.map((point, index) => ({
+  const chartData = data.driverA.telemetry.map((point: any, index: number) => ({
     distance: point.distance,
-    [`${data.driverA.code}`]: point.speed,
-    [`${data.driverB.code}`]: data.driverB.telemetry[index]?.speed ?? null,
+    [driverACode]: point.speed,
+    [driverBCode]: data.driverB.telemetry[index]?.speed ?? null,
   }))
 
   return (
@@ -32,7 +38,7 @@ export function SpeedChart({ data, height = 300 }: SpeedChartProps) {
       <CardContent>
         <ResponsiveContainer width="100%" height={height}>
           <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" className="chart-grid" />
+            <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
             <XAxis
               dataKey="distance"
               tickFormatter={(value) => `${(value / 1000).toFixed(1)}km`}
@@ -51,25 +57,25 @@ export function SpeedChart({ data, height = 300 }: SpeedChartProps) {
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: 'hsl(var(--popover))',
-                border: '1px solid hsl(var(--border))',
+                backgroundColor: '#1a1a1a',
+                border: '1px solid #333',
                 borderRadius: '8px',
               }}
-              formatter={(value: number) => [`${value.toFixed(0)} km/h`]}
+              formatter={(value: number) => [`${value?.toFixed(0)} km/h`]}
               labelFormatter={(value) => `Distance: ${(value / 1000).toFixed(2)} km`}
             />
             <Legend />
             <Line
               type="monotone"
-              dataKey={data.driverA.code}
-              stroke={data.driverA.color}
+              dataKey={driverACode}
+              stroke="#3b82f6"
               dot={false}
               strokeWidth={2}
             />
             <Line
               type="monotone"
-              dataKey={data.driverB.code}
-              stroke={data.driverB.color}
+              dataKey={driverBCode}
+              stroke="#22c55e"
               dot={false}
               strokeWidth={2}
             />

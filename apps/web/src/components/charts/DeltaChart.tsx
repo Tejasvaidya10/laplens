@@ -1,6 +1,6 @@
 import {
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -8,91 +8,62 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts'
-import type { TelemetryComparison } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { formatDelta } from '@/lib/utils'
 
 interface DeltaChartProps {
-  data: TelemetryComparison
+  data: any
   height?: number
 }
 
-export function DeltaChart({ data, height = 200 }: DeltaChartProps) {
-  const chartData = data.delta.map((point) => ({
-    distance: point.distance,
-    delta: point.timeDelta,
-  }))
+export function DeltaChart({ data, height = 300 }: DeltaChartProps) {
+  if (!data?.delta || data.delta.length === 0) {
+    return <div>No delta data available</div>
+  }
 
-  const finalDelta = chartData[chartData.length - 1]?.delta ?? 0
+  const driverACode = data.driverA?.driver || 'Driver A'
+  const driverBCode = data.driverB?.driver || 'Driver B'
+
+  const chartData = data.delta.map((point: any) => ({
+    distance: point.distance,
+    delta: point.delta,
+  }))
 
   return (
     <Card>
       <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base">Lap Time Delta</CardTitle>
-          <div className="flex items-center gap-2">
-            <span
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: data.driverA.color }}
-            />
-            <span className="text-sm">{data.driverA.code}</span>
-            <span className="text-muted-foreground mx-2">vs</span>
-            <span
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: data.driverB.color }}
-            />
-            <span className="text-sm">{data.driverB.code}</span>
-          </div>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Final gap: <span className={finalDelta >= 0 ? 'text-green-500' : 'text-red-500'}>
-            {formatDelta(finalDelta)}
-          </span>
-          {' '}({finalDelta >= 0 ? data.driverA.code : data.driverB.code} ahead)
-        </p>
+        <CardTitle className="text-base">Lap Time Delta ({driverACode} vs {driverBCode})</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={height}>
-          <AreaChart data={chartData}>
-            <defs>
-              <linearGradient id="deltaPositive" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="deltaNegative" x1="0" y1="1" x2="0" y2="0">
-                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" className="chart-grid" />
+          <LineChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
             <XAxis
               dataKey="distance"
               tickFormatter={(value) => `${(value / 1000).toFixed(1)}km`}
               tick={{ fontSize: 12 }}
             />
             <YAxis
-              domain={['auto', 'auto']}
-              tickFormatter={(value) => `${value.toFixed(1)}s`}
               tick={{ fontSize: 12 }}
+              tickFormatter={(value) => `${value > 0 ? '+' : ''}${value.toFixed(1)}s`}
+              label={{
+                value: 'Delta (s)',
+                angle: -90,
+                position: 'insideLeft',
+                style: { fontSize: 12 },
+              }}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: 'hsl(var(--popover))',
-                border: '1px solid hsl(var(--border))',
+                backgroundColor: '#1a1a1a',
+                border: '1px solid #333',
                 borderRadius: '8px',
               }}
-              formatter={(value: number) => [formatDelta(value), 'Delta']}
+              formatter={(value: number) => [`${value > 0 ? '+' : ''}${value.toFixed(3)}s`]}
               labelFormatter={(value) => `Distance: ${(value / 1000).toFixed(2)} km`}
             />
-            <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" />
-            <Area
-              type="monotone"
-              dataKey="delta"
-              stroke={finalDelta >= 0 ? '#22c55e' : '#ef4444'}
-              fill={finalDelta >= 0 ? 'url(#deltaPositive)' : 'url(#deltaNegative)'}
-              strokeWidth={2}
-            />
-          </AreaChart>
+            <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
+            <Line type="monotone" dataKey="delta" stroke="#f59e0b" dot={false} strokeWidth={2} />
+          </LineChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
