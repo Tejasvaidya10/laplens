@@ -29,9 +29,8 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers,
     }
 
     if (this.accessToken) {
@@ -51,34 +50,28 @@ class ApiClient {
     return response.json()
   }
 
-  // Health check
   async health(): Promise<{ status: string; timestamp: string }> {
     return this.request('/health')
   }
 
-  // Seasons
   async getSeasons(): Promise<Season[]> {
     return this.request('/seasons')
   }
 
-  // Events
   async getEvents(season: number): Promise<Event[]> {
     return this.request(`/events?season=${season}`)
   }
 
-  // Sessions
   async getSessions(season: number, event: string): Promise<Session[]> {
     return this.request(`/sessions?season=${season}&event=${encodeURIComponent(event)}`)
   }
 
-  // Drivers
   async getDrivers(season: number, event: string, session: string): Promise<Driver[]> {
     return this.request(
       `/drivers?season=${season}&event=${encodeURIComponent(event)}&session=${session}`
     )
   }
 
-  // Telemetry comparison
   async compareTelemetry(data: CompareFormData): Promise<TelemetryComparison> {
     return this.request('/telemetry/compare', {
       method: 'POST',
@@ -86,48 +79,32 @@ class ApiClient {
         season: data.season,
         event: data.event,
         session: data.session,
-        driver_a: data.driverA,
-        driver_b: data.driverB,
-        lap_a: data.lapA,
-        lap_b: data.lapB,
+        driverA: data.driverA,
+        driverB: data.driverB,
+        lapA: data.lapA,
+        lapB: data.lapB,
       }),
     })
   }
 
-  // Strategy data
-  async getStrategy(
-    season: number,
-    event: string,
-    session: string
-  ): Promise<StrategyData> {
+  async getStrategy(season: number, event: string, session: string): Promise<StrategyData> {
     return this.request(
       `/strategy?season=${season}&event=${encodeURIComponent(event)}&session=${session}`
     )
   }
 
-  // Position changes
-  async getPositions(
-    season: number,
-    event: string,
-    session: string
-  ): Promise<PositionData[]> {
+  async getPositions(season: number, event: string, session: string): Promise<PositionData[]> {
     return this.request(
       `/positions?season=${season}&event=${encodeURIComponent(event)}&session=${session}`
     )
   }
 
-  // Track evolution
-  async getTrackEvolution(
-    season: number,
-    event: string,
-    session: string
-  ): Promise<TrackEvolution[]> {
+  async getTrackEvolution(season: number, event: string, session: string): Promise<TrackEvolution[]> {
     return this.request(
       `/track-evolution?season=${season}&event=${encodeURIComponent(event)}&session=${session}`
     )
   }
 
-  // Saved analyses (authenticated)
   async getSavedAnalyses(): Promise<SavedAnalysis[]> {
     return this.request('/saved-analyses')
   }
@@ -136,7 +113,7 @@ class ApiClient {
     return this.request(`/saved-analyses/${id}`)
   }
 
-  async createSavedAnalysis(data: Omit<SavedAnalysis, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<SavedAnalysis> {
+  async createSavedAnalysis(data: any): Promise<SavedAnalysis> {
     return this.request('/saved-analyses', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -151,3 +128,4 @@ class ApiClient {
 }
 
 export const api = new ApiClient(API_BASE_URL)
+export const apiClient = api
