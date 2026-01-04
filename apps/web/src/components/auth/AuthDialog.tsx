@@ -85,7 +85,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Welcome to Pitlane Telemetry</DialogTitle>
+          <DialogTitle>Welcome to LapLens</DialogTitle>
           <DialogDescription>
             Sign in to save your analyses and access them from anywhere.
           </DialogDescription>

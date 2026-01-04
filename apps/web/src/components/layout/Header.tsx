@@ -29,7 +29,7 @@ export function Header() {
               </div>
               <div className="hidden sm:block">
                 <h1 className="text-lg font-bold tracking-tight">
-                  Pitlane Telemetry
+                  LapLens
                 </h1>
                 <p className="text-xs text-muted-foreground">
                   F1 Analytics Dashboard
