@@ -94,9 +94,9 @@ export function SessionSelector() {
             </SelectTrigger>
             <SelectContent>
               {events?.map((e) => (
-                <SelectItem key={e.name} value={e.name}>
+                <SelectItem key={e.roundNumber} value={e.eventName}>
                   <div className="flex flex-col">
-                    <span>{e.name}</span>
+                    <span>{e.eventName}</span>
                     <span className="text-xs text-muted-foreground">
                       {e.eventName}
                     </span>
