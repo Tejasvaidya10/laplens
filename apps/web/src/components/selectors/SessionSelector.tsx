@@ -126,7 +126,7 @@ export function SessionSelector() {
             </SelectTrigger>
             <SelectContent>
               {sessions?.map((s) => (
-                <SelectItem key={s.name} value={s.type}>
+                <SelectItem key={s.name} value={s.name}>
                   {s.name}
                 </SelectItem>
               ))}
