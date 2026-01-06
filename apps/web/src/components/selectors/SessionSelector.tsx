@@ -98,7 +98,7 @@ export function SessionSelector() {
                   <div className="flex flex-col">
                     <span>{e.name}</span>
                     <span className="text-xs text-muted-foreground">
-                      {e.country}
+                      {e.eventName}
                     </span>
                   </div>
                 </SelectItem>
