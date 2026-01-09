@@ -92,7 +92,7 @@ export function RacePaceChart({ data, height = 400 }: RacePaceChartProps) {
         const entry = lapMap.get(lapData.lap)
         if (entry) {
           // Only include non-pit, non-outlier laps for cleaner visualization
-          if (!lapData.isPitLap && !lapData.isOutlier) {
+          if (!lapData.isOutlier) {
             entry[driver.driver] = lapData.lapTime
             entry[`${driver.driver}_compound`] = lapData.compound
             entry[`${driver.driver}_stint`] = lapData.stint
