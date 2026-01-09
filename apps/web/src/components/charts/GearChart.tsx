@@ -16,17 +16,17 @@ interface GearChartProps {
 }
 
 export function GearChart({ data, height = 300 }: GearChartProps) {
-  if (!data?.driverA?.telemetry || !data?.driverB?.telemetry) {
+  if (!data?.driverA?.data || !data?.driverB?.data) {
     return <div>No telemetry data available</div>
   }
 
   const driverACode = data.driverA.driver || 'Driver A'
   const driverBCode = data.driverB.driver || 'Driver B'
 
-  const chartData = data.driverA.telemetry.map((point: any, index: number) => ({
+  const chartData = data.driverA.data.map((point: any, index: number) => ({
     distance: point.distance,
     [driverACode]: point.gear,
-    [driverBCode]: data.driverB.telemetry[index]?.gear ?? null,
+    [driverBCode]: data.driverB.data[index]?.gear ?? null,
   }))
 
   return (

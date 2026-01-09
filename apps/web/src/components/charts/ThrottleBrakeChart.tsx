@@ -16,19 +16,19 @@ interface ThrottleBrakeChartProps {
 }
 
 export function ThrottleBrakeChart({ data, height = 300 }: ThrottleBrakeChartProps) {
-  if (!data?.driverA?.telemetry || !data?.driverB?.telemetry) {
+  if (!data?.driverA?.data || !data?.driverB?.data) {
     return <div>No telemetry data available</div>
   }
 
   const driverACode = data.driverA.driver || 'Driver A'
   const driverBCode = data.driverB.driver || 'Driver B'
 
-  const chartData = data.driverA.telemetry.map((point: any, index: number) => ({
+  const chartData = data.driverA.data.map((point: any, index: number) => ({
     distance: point.distance,
     [`${driverACode} Throttle`]: point.throttle,
     [`${driverACode} Brake`]: point.brake,
-    [`${driverBCode} Throttle`]: data.driverB.telemetry[index]?.throttle ?? null,
-    [`${driverBCode} Brake`]: data.driverB.telemetry[index]?.brake ?? null,
+    [`${driverBCode} Throttle`]: data.driverB.data[index]?.throttle ?? null,
+    [`${driverBCode} Brake`]: data.driverB.data[index]?.brake ?? null,
   }))
 
   return (

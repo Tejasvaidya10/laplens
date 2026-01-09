@@ -16,7 +16,7 @@ interface SpeedChartProps {
 }
 
 export function SpeedChart({ data, height = 300 }: SpeedChartProps) {
-  if (!data?.driverA?.telemetry || !data?.driverB?.telemetry) {
+  if (!data?.driverA?.data || !data?.driverB?.data) {
     return <div>No telemetry data available</div>
   }
 
@@ -24,10 +24,10 @@ export function SpeedChart({ data, height = 300 }: SpeedChartProps) {
   const driverBCode = data.driverB.driver || 'Driver B'
 
   // Merge telemetry data for chart
-  const chartData = data.driverA.telemetry.map((point: any, index: number) => ({
+  const chartData = data.driverA.data.map((point: any, index: number) => ({
     distance: point.distance,
     [driverACode]: point.speed,
-    [driverBCode]: data.driverB.telemetry[index]?.speed ?? null,
+    [driverBCode]: data.driverB.data[index]?.speed ?? null,
   }))
 
   return (
