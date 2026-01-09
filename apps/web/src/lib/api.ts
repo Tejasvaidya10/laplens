@@ -125,6 +125,22 @@ class ApiClient {
       method: 'DELETE',
     })
   }
+  async getRacePace(
+    season: number,
+    event: string,
+    session: string,
+    drivers: string[]
+  ): Promise<any> {
+    return this.request('/telemetry/race-pace', {
+      method: 'POST',
+      body: JSON.stringify({
+        season,
+        event,
+        session,
+        drivers,
+      }),
+    })
+  }
 }
 
 export const api = new ApiClient(API_BASE_URL)

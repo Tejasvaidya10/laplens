@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { SpeedChart, ThrottleBrakeChart, GearChart, DeltaChart } from '@/components/charts';
+import { SpeedChart, ThrottleBrakeChart, GearChart, DeltaChart, RacePaceChart } from '@/components/charts';
 import { api } from '@/lib/api';
 import { useSessionStore } from '@/hooks/use-session-store';
 import { Loader2 } from 'lucide-react';
@@ -25,9 +25,24 @@ export function Dashboard() {
     enabled: false,
   });
 
+  const { data: racePace, isLoading: racePaceLoading, refetch: refetchRacePace } = useQuery({
+    queryKey: ['racePace', season, event, session, driverA, driverB],
+    queryFn: () => api.getRacePace(
+      season!,
+      event!,
+      session!,
+      [driverA!, driverB!]
+    ),
+    enabled: false,
+  });
+
   const handleCompare = () => {
     if (canCompare) {
       refetch();
+      // Only fetch race pace for race sessions
+      if (session === 'R') {
+        refetchRacePace();
+      }
     }
   };
 
@@ -50,8 +65,8 @@ export function Dashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <p>Ready to compare <strong>{driverA}</strong> vs <strong>{driverB}</strong></p>
-              <Button onClick={handleCompare} disabled={isLoading}>
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              <Button onClick={handleCompare} disabled={isLoading || racePaceLoading}>
+                {(isLoading || racePaceLoading) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Compare Telemetry
               </Button>
             </div>
@@ -74,6 +89,7 @@ export function Dashboard() {
             <TabsTrigger value="throttle">Throttle/Brake</TabsTrigger>
             <TabsTrigger value="gear">Gear</TabsTrigger>
             <TabsTrigger value="delta">Delta</TabsTrigger>
+            {session === 'R' && <TabsTrigger value="racepace">Race Pace</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="speed">
@@ -119,6 +135,27 @@ export function Dashboard() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {session === 'R' && (
+            <TabsContent value="racepace">
+              {racePaceLoading ? (
+                <Card>
+                  <CardContent className="pt-6 flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                    <span className="ml-2">Loading race pace data...</span>
+                  </CardContent>
+                </Card>
+              ) : racePace ? (
+                <RacePaceChart data={racePace} />
+              ) : (
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-muted-foreground">Race pace data not available</p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          )}
         </Tabs>
       )}
     </div>
