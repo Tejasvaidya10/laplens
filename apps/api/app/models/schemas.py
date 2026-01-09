@@ -231,3 +231,68 @@ class RateLimitInfo(BaseModel):
     limit: int
     remaining: int
     reset: int
+
+
+# ============ Race Pace Models ============
+
+class LapTimePoint(BaseModel):
+    """Single lap time data point"""
+    lap: int
+    lap_time: float = Field(alias="lapTime")
+    compound: Optional[str] = None
+    stint: int = 1
+    is_pit_lap: bool = Field(alias="isPitLap", default=False)
+    is_outlier: bool = Field(alias="isOutlier", default=False)
+    
+    class Config:
+        populate_by_name = True
+
+
+class StintSummary(BaseModel):
+    """Summary statistics for a stint"""
+    stint_number: int = Field(alias="stintNumber")
+    compound: str
+    start_lap: int = Field(alias="startLap")
+    end_lap: int = Field(alias="endLap")
+    total_laps: int = Field(alias="totalLaps")
+    avg_lap_time: float = Field(alias="avgLapTime")
+    best_lap_time: float = Field(alias="bestLapTime")
+    deg_rate: float = Field(alias="degRate")
+    
+    class Config:
+        populate_by_name = True
+
+
+class DriverRacePace(BaseModel):
+    """Race pace data for a single driver"""
+    driver: str
+    team: str
+    team_color: str = Field(alias="teamColor")
+    laps: List[LapTimePoint]
+    stints: List[StintSummary]
+    total_race_time: Optional[float] = Field(alias="totalRaceTime", default=None)
+    
+    class Config:
+        populate_by_name = True
+
+
+class RacePaceComparison(BaseModel):
+    """Race pace comparison between drivers"""
+    drivers: List[DriverRacePace]
+    total_laps: int = Field(alias="totalLaps")
+    safety_car_laps: List[int] = Field(alias="safetyCarLaps", default=[])
+    vsc_laps: List[int] = Field(alias="vscLaps", default=[])
+    
+    class Config:
+        populate_by_name = True
+
+
+class RacePaceRequest(BaseModel):
+    """Request body for race pace data"""
+    season: int
+    event: str
+    session: str = "R"
+    drivers: List[str]
+    
+    class Config:
+        populate_by_name = True

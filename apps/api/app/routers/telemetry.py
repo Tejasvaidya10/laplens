@@ -4,7 +4,7 @@ Telemetry comparison endpoint
 
 from fastapi import APIRouter, HTTPException
 
-from app.models import TelemetryComparison, TelemetryCompareRequest
+from app.models import TelemetryComparison, TelemetryCompareRequest, RacePaceComparison, RacePaceRequest
 from app.services import fastf1_service, cache_service
 from app.services.storage_service import storage_service
 
@@ -91,3 +91,38 @@ async def compare_telemetry(request: TelemetryCompareRequest):
     await cache_service.set_json(cache_key, comparison_dict)
     
     return comparison
+@router.post("/race-pace", response_model=RacePaceComparison)
+async def get_race_pace(request: RacePaceRequest):
+    """
+    Get race pace data for multiple drivers.
+    
+    Returns lap times, stint information, and degradation rates
+    for analyzing race pace and tire strategy.
+    """
+    # Generate cache key
+    drivers_str = "_".join(sorted(request.drivers))
+    cache_key = f"race_pace:{request.season}:{request.event}:{request.session}:{drivers_str}"
+    
+    # Check Redis cache first
+    cached = await cache_service.get_json(cache_key)
+    if cached:
+        return RacePaceComparison(**cached)
+    
+    # Fetch from FastF1
+    try:
+        pace_data = fastf1_service.get_race_pace(
+            request.season,
+            request.event,
+            request.session,
+            request.drivers,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch race pace data: {str(e)}"
+        )
+    
+    # Cache in Redis (longer TTL since race data doesn't change)
+    await cache_service.set_json(cache_key, pace_data, ttl=86400)  # 24 hours
+    
+    return pace_data

@@ -459,6 +459,152 @@ class FastF1Service:
             print(f"Error fetching track evolution: {e}")
             raise
 
+    def get_race_pace(
+            self,
+            season: int,
+            event: str,
+            session: str,
+            drivers: List[str],
+        ) -> Dict[str, Any]:
+            """Get race pace data for multiple drivers"""
+            try:
+                session_obj = fastf1.get_session(season, event, session)
+                session_obj.load(telemetry=False, weather=False, messages=False)
+                
+                laps = session_obj.laps
+                results = session_obj.results
+                
+                drivers_data = []
+                
+                for driver_code in drivers:
+                    driver_laps = laps[laps["Driver"] == driver_code].sort_values("LapNumber")
+                    
+                    if driver_laps.empty:
+                        continue
+                    
+                    # Get driver info
+                    driver_info = results[results["Abbreviation"] == driver_code]
+                    team = str(driver_info["TeamName"].values[0]) if not driver_info.empty else ""
+                    team_color = str(driver_info["TeamColor"].values[0]) if not driver_info.empty else "999999"
+                    if not team_color.startswith("#"):
+                        team_color = f"#{team_color}"
+                    
+                    lap_times = []
+                    stints_data = {}
+                    current_stint = 1
+                    
+                    for _, lap in driver_laps.iterrows():
+                        lap_time = lap.get("LapTime")
+                        if pd.isna(lap_time):
+                            continue
+                        
+                        lap_time_sec = lap_time.total_seconds()
+                        lap_num = int(lap["LapNumber"])
+                        compound = str(lap.get("Compound", "UNKNOWN")).upper()
+                        stint_num = int(lap.get("Stint", 1))
+                        
+                        # Detect pit laps (abnormally slow)
+                        is_pit_lap = lap.get("PitOutTime") is not None or lap.get("PitInTime") is not None
+                        if pd.isna(is_pit_lap):
+                            is_pit_lap = False
+                        
+                        # Track stint data for degradation calculation
+                        if stint_num not in stints_data:
+                            stints_data[stint_num] = {
+                                "compound": compound,
+                                "laps": [],
+                                "times": [],
+                                "start_lap": lap_num,
+                            }
+                        
+                        stints_data[stint_num]["laps"].append(lap_num)
+                        stints_data[stint_num]["times"].append(lap_time_sec)
+                        stints_data[stint_num]["end_lap"] = lap_num
+                        
+                        lap_times.append({
+                            "lap": lap_num,
+                            "lapTime": lap_time_sec,
+                            "compound": compound,
+                            "stint": stint_num,
+                            "isPitLap": bool(is_pit_lap),
+                            "isOutlier": False,  # Will be calculated below
+                        })
+                    
+                    # Mark outliers (laps > 107% of median)
+                    if lap_times:
+                        valid_times = [lt["lapTime"] for lt in lap_times if not lt["isPitLap"]]
+                        if valid_times:
+                            median_time = np.median(valid_times)
+                            outlier_threshold = median_time * 1.07  # 107% rule
+                            
+                            for lt in lap_times:
+                                if lt["lapTime"] > outlier_threshold:
+                                    lt["isOutlier"] = True
+                    
+                    # Calculate stint summaries
+                    stint_summaries = []
+                    for stint_num, stint_info in stints_data.items():
+                        times = stint_info["times"]
+                        laps_in_stint = stint_info["laps"]
+                        
+                        # Filter out pit laps and outliers for stats
+                        clean_times = []
+                        for i, t in enumerate(times):
+                            lap_data = next((lt for lt in lap_times if lt["lap"] == laps_in_stint[i]), None)
+                            if lap_data and not lap_data["isPitLap"] and not lap_data["isOutlier"]:
+                                clean_times.append(t)
+                        
+                        if not clean_times:
+                            clean_times = times  # Fallback
+                        
+                        # Calculate degradation rate (linear regression)
+                        deg_rate = 0.0
+                        if len(clean_times) >= 3:
+                            x = np.arange(len(clean_times))
+                            coeffs = np.polyfit(x, clean_times, 1)
+                            deg_rate = float(coeffs[0])  # Slope = seconds per lap
+                        
+                        stint_summaries.append({
+                            "stintNumber": stint_num,
+                            "compound": stint_info["compound"],
+                            "startLap": stint_info["start_lap"],
+                            "endLap": stint_info["end_lap"],
+                            "totalLaps": len(times),
+                            "avgLapTime": float(np.mean(clean_times)),
+                            "bestLapTime": float(min(clean_times)),
+                            "degRate": deg_rate,
+                        })
+                    
+                    # Calculate total race time
+                    total_race_time = sum(lt["lapTime"] for lt in lap_times)
+                    
+                    drivers_data.append({
+                        "driver": driver_code,
+                        "team": team,
+                        "teamColor": team_color,
+                        "laps": lap_times,
+                        "stints": stint_summaries,
+                        "totalRaceTime": total_race_time,
+                    })
+                
+                # Get total laps and safety car info
+                total_laps = int(laps["LapNumber"].max()) if not laps.empty else 0
+                
+                # Try to detect safety car laps (all drivers slow)
+                safety_car_laps = []
+                vsc_laps = []
+                # TODO: Could be enhanced with race control messages
+                
+                return {
+                    "drivers": drivers_data,
+                    "totalLaps": total_laps,
+                    "safetyCarLaps": safety_car_laps,
+                    "vscLaps": vsc_laps,
+                }
+                
+            except Exception as e:
+                print(f"Error fetching race pace: {e}")
+                raise
 
 # Global FastF1 service instance
 fastf1_service = FastF1Service()
