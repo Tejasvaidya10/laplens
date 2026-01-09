@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import {
   Select,
@@ -10,6 +10,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSessionStore } from '@/hooks/use-session-store'
+import { Loader2 } from 'lucide-react'
 
 export function SessionSelector() {
   const {
@@ -20,6 +21,8 @@ export function SessionSelector() {
     setEvent,
     setSession,
   } = useSessionStore()
+
+  const queryClient = useQueryClient()
 
   // Fetch seasons
   const { data: seasons, isLoading: seasonsLoading } = useQuery({
@@ -40,6 +43,26 @@ export function SessionSelector() {
     queryFn: () => api.getSessions(season!, event!),
     enabled: !!season && !!event,
   })
+
+  // Fetch drivers (this warms the FastF1 cache)
+  const { data: drivers, isLoading: driversLoading, isFetching: driversFetching } = useQuery({
+    queryKey: ['drivers', season, event, session],
+    queryFn: () => api.getDrivers(season!, event!, session!),
+    enabled: !!season && !!event && !!session,
+    staleTime: 1000 * 60 * 60, // 1 hour
+  })
+
+  // Pre-fetch function to warm cache in background
+  const prefetchSession = async (sessionName: string) => {
+    if (season && event) {
+      // This triggers FastF1 to load session data in the background
+      queryClient.prefetchQuery({
+        queryKey: ['drivers', season, event, sessionName],
+        queryFn: () => api.getDrivers(season, event, sessionName),
+        staleTime: 1000 * 60 * 60,
+      })
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -110,15 +133,24 @@ export function SessionSelector() {
 
       {/* Session Selector */}
       <div className="space-y-2">
-        <Label htmlFor="session" className="text-xs text-muted-foreground">
+        <Label htmlFor="session" className="text-xs text-muted-foreground flex items-center gap-2">
           Session
+          {driversFetching && (
+            <span className="flex items-center text-xs text-blue-400">
+              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+              Loading data...
+            </span>
+          )}
         </Label>
         {sessionsLoading ? (
           <Skeleton className="h-9 w-full" />
         ) : (
           <Select
             value={session || ''}
-            onValueChange={setSession}
+            onValueChange={(value) => {
+              setSession(value)
+              prefetchSession(value)
+            }}
             disabled={!event}
           >
             <SelectTrigger id="session">
