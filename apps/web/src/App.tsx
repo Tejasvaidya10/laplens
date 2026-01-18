@@ -7,9 +7,9 @@ import { AuthCallback } from './pages/AuthCallback'
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="saved" element={<SavedAnalyses />} />
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/saved" element={<Layout />}>
+        <Route index element={<SavedAnalyses />} />
       </Route>
       <Route path="/auth/callback" element={<AuthCallback />} />
     </Routes>
