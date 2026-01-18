@@ -1,11 +1,118 @@
-import { Zap, BarChart3, BookOpen, ArrowRight } from 'lucide-react'
+import { useState } from 'react'
+import { Zap, BarChart3, BookOpen, ArrowRight, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface LandingPageProps {
   onOpenApp: () => void
 }
 
+function FlipCard({ 
+  icon, 
+  title, 
+  desc, 
+  backContent 
+}: { 
+  icon: React.ReactNode
+  title: string
+  desc: string
+  backContent: string[]
+}) {
+  const [isFlipped, setIsFlipped] = useState(false)
+
+  return (
+    <div 
+      className="h-72 cursor-pointer perspective-1000"
+      onClick={() => setIsFlipped(!isFlipped)}
+    >
+      <div 
+        className={`relative w-full h-full transition-transform duration-500 transform-style-3d ${
+          isFlipped ? 'rotate-y-180' : ''
+        }`}
+        style={{
+          transformStyle: 'preserve-3d',
+          transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+        }}
+      >
+        {/* Front */}
+        <div 
+          className="absolute w-full h-full bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-blue-500/50 transition backface-hidden"
+          style={{ backfaceVisibility: 'hidden' }}
+        >
+          <div className="w-10 h-10 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center mb-4">
+            {icon}
+          </div>
+          <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
+          <p className="text-sm text-zinc-500 mb-4">{desc}</p>
+          <p className="text-xs text-blue-400 mt-auto">Click to learn more</p>
+        </div>
+
+        {/* Back */}
+        <div 
+          className="absolute w-full h-full bg-zinc-900 border border-blue-500/50 rounded-xl p-6 backface-hidden"
+          style={{ 
+            backfaceVisibility: 'hidden',
+            transform: 'rotateY(180deg)',
+          }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-white">{title}</h3>
+            <RotateCcw className="w-4 h-4 text-zinc-500" />
+          </div>
+          <ul className="space-y-2">
+            {backContent.map((item, i) => (
+              <li key={i} className="text-sm text-zinc-400 flex items-start gap-2">
+                <span className="text-blue-400 mt-1">&#8226;</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-zinc-500 mt-4">Click to flip back</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function LandingPage({ onOpenApp }: LandingPageProps) {
+  const features = [
+    {
+      icon: <BarChart3 className="w-5 h-5" />,
+      title: 'Telemetry Compare',
+      desc: 'Speed, throttle, brake, and gear data visualized lap-by-lap.',
+      backContent: [
+        'Compare two drivers side-by-side on their fastest laps',
+        'Speed trace shows km/h at every meter of the track',
+        'Throttle/brake overlay reveals driving style differences',
+        'Gear chart shows shifting patterns through corners',
+        'Delta chart pinpoints exactly where time is gained or lost',
+      ],
+    },
+    {
+      icon: <Zap className="w-5 h-5" />,
+      title: 'Race Pace',
+      desc: 'Stint analysis with tire degradation and pit strategy insights.',
+      backContent: [
+        'View lap times for the entire race, not just fastest lap',
+        'Color-coded by tire compound (Soft, Medium, Hard)',
+        'See degradation rate - how much slower each lap gets',
+        'Compare pit stop timing between drivers',
+        'Identify undercuts, overcuts, and strategy calls',
+      ],
+    },
+    {
+      icon: <BookOpen className="w-5 h-5" />,
+      title: 'Race Story',
+      desc: 'Narrative timeline explaining what happened and why.',
+      backContent: [
+        'Chronological breakdown of key race moments',
+        'Start analysis - who gained or lost positions',
+        'Pit window battles and strategy decisions',
+        'Pace comparison through different phases',
+        'Final result with gap analysis',
+      ],
+    },
+  ]
+
   return (
     <div className="min-h-screen bg-zinc-950">
       {/* Navbar */}
@@ -48,38 +155,19 @@ export function LandingPage({ onOpenApp }: LandingPageProps) {
         </div>
       </section>
 
-      {/* Features Grid */}
+      {/* Features Grid - Flip Cards */}
       <section id="features" className="max-w-7xl mx-auto px-6 py-16">
-        <h2 className="text-2xl font-bold text-white text-center mb-10">What You Can Do</h2>
+        <h2 className="text-2xl font-bold text-white text-center mb-4">What You Can Do</h2>
+        <p className="text-zinc-500 text-center mb-10">Click each card to learn more</p>
         <div className="grid md:grid-cols-3 gap-6">
-          {[
-            {
-              icon: <BarChart3 className="w-5 h-5" />,
-              title: 'Telemetry Compare',
-              desc: 'Speed, throttle, brake, and gear data visualized lap-by-lap. See exactly where drivers gain or lose time.',
-            },
-            {
-              icon: <Zap className="w-5 h-5" />,
-              title: 'Race Pace',
-              desc: 'Stint analysis with tire degradation and pit strategy insights. Understand how strategy shapes the race.',
-            },
-            {
-              icon: <BookOpen className="w-5 h-5" />,
-              title: 'Race Story',
-              desc: 'Narrative timeline explaining what happened and why. Key moments highlighted with data.',
-            },
-          ].map((f, i) => (
-            <div
+          {features.map((f, i) => (
+            <FlipCard
               key={i}
-              onClick={onOpenApp}
-              className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-blue-500/50 hover:bg-zinc-900/80 transition cursor-pointer"
-            >
-              <div className="w-10 h-10 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center mb-4">
-                {f.icon}
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">{f.title}</h3>
-              <p className="text-sm text-zinc-500">{f.desc}</p>
-            </div>
+              icon={f.icon}
+              title={f.title}
+              desc={f.desc}
+              backContent={f.backContent}
+            />
           ))}
         </div>
       </section>
