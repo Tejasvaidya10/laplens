@@ -66,7 +66,7 @@ function FlipCard({
               </li>
             ))}
           </ul>
-          <p className="text-xs text-zinc-500 mt-4">Click to flip back</p>
+          
         </div>
       </div>
     </div>
