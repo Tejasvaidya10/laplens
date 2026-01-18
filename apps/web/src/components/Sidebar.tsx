@@ -3,14 +3,14 @@ import { Zap, ArrowLeftRight, Loader2, Play } from 'lucide-react'
 import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { useSessionStore } from '@/hooks/use-session-store'
-import { glossaryTerms } from '@/lib/design-tokens'
 
 interface SidebarProps {
   onRunAnalysis: () => void
+  onLogoClick?: () => void
   isLoading?: boolean
 }
 
-export function Sidebar({ onRunAnalysis, isLoading }: SidebarProps) {
+export function Sidebar({ onRunAnalysis, onLogoClick, isLoading }: SidebarProps) {
   const {
     season,
     event,
@@ -58,14 +58,17 @@ export function Sidebar({ onRunAnalysis, isLoading }: SidebarProps) {
   const canAnalyze = season && event && session && driverA && driverB && !isLoading
 
   return (
-    <div className="w-80 bg-zinc-950 border-r border-zinc-900 p-6 flex flex-col h-full">
-      {/* Logo */}
-      <div className="flex items-center gap-2 mb-8">
+    <div className="w-72 bg-zinc-950 border-r border-zinc-900 p-5 flex flex-col h-full">
+      {/* Logo - Clickable */}
+      <button 
+        onClick={onLogoClick}
+        className="flex items-center gap-2 mb-8 hover:opacity-80 transition-opacity"
+      >
         <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white">
           <Zap className="w-4 h-4" />
         </div>
         <span className="text-lg font-bold text-white">LapLens</span>
-      </div>
+      </button>
 
       <div className="space-y-4 flex-1 overflow-y-auto">
         <div className="text-xs font-medium text-zinc-600 uppercase tracking-wider">

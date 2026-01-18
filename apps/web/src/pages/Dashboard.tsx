@@ -206,7 +206,7 @@ export function Dashboard() {
 
   return (
     <div className="flex h-screen">
-      <Sidebar onRunAnalysis={handleRunAnalysis} isLoading={isAnalyzing} />
+      <Sidebar onRunAnalysis={handleRunAnalysis} onLogoClick={() => setViewState('landing')} isLoading={isAnalyzing} />
 
       <div className="flex-1 bg-zinc-950 p-8 overflow-auto">
         {telemetry ? (
