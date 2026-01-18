@@ -78,12 +78,22 @@ class DeltaPoint(BaseModel):
     distance: float
     delta: float  # positive = driver A ahead
 
+class SectorTimes(BaseModel):
+    """Sector times for a lap"""
+    sector1: Optional[float] = None
+    sector2: Optional[float] = None
+    sector3: Optional[float] = None
+    
+    class Config:
+        populate_by_name = True
 
 class TelemetryComparison(BaseModel):
     """Comparison response with telemetry data for two drivers"""
     driver_a: LapTelemetry = Field(alias="driverA")
     driver_b: LapTelemetry = Field(alias="driverB")
     delta: List[DeltaPoint]
+    sectors_a: Optional[SectorTimes] = Field(alias="sectorsA", default=None)
+    sectors_b: Optional[SectorTimes] = Field(alias="sectorsB", default=None)
     
     class Config:
         populate_by_name = True
