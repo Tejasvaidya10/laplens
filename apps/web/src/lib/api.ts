@@ -87,6 +87,23 @@ class ApiClient {
     })
   }
 
+  async getRacePace(
+    season: number,
+    event: string,
+    session: string,
+    drivers: string[]
+  ): Promise<any> {
+    return this.request('/telemetry/race-pace', {
+      method: 'POST',
+      body: JSON.stringify({
+        season,
+        event,
+        session,
+        drivers,
+      }),
+    })
+  }
+
   async getStrategy(season: number, event: string, session: string): Promise<StrategyData> {
     return this.request(
       `/strategy?season=${season}&event=${encodeURIComponent(event)}&session=${session}`
@@ -99,7 +116,7 @@ class ApiClient {
     )
   }
 
-  async getTrackEvolution(season: number, event: string, session: string): Promise<TrackEvolution[]> {
+  async getTrackEvolution(season: number, event: string, session: string): Promise<TrackEvolution> {
     return this.request(
       `/track-evolution?season=${season}&event=${encodeURIComponent(event)}&session=${session}`
     )
@@ -123,22 +140,6 @@ class ApiClient {
   async deleteSavedAnalysis(id: string): Promise<void> {
     return this.request(`/saved-analyses/${id}`, {
       method: 'DELETE',
-    })
-  }
-  async getRacePace(
-    season: number,
-    event: string,
-    session: string,
-    drivers: string[]
-  ): Promise<any> {
-    return this.request('/telemetry/race-pace', {
-      method: 'POST',
-      body: JSON.stringify({
-        season,
-        event,
-        session,
-        drivers,
-      }),
     })
   }
 }
