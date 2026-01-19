@@ -208,29 +208,23 @@ class FastF1Service:
             delta = self._calculate_delta(tel_a, tel_b, max_points)
             
             # Extract sector times
-                     
-            sectors_a = SectorTimes(
-                sector1=lap_a_data["Sector1Time"].total_seconds() if pd.notna(lap_a_data["Sector1Time"]) else None,
-                sector2=lap_a_data["Sector2Time"].total_seconds() if pd.notna(lap_a_data["Sector2Time"]) else None,
-                sector3=lap_a_data["Sector3Time"].total_seconds() if pd.notna(lap_a_data["Sector3Time"]) else None,
-            )
+            try:
+                sectors_a = SectorTimes(
+                    sector1=float(lap_a_data["Sector1Time"].total_seconds()) if pd.notna(lap_a_data["Sector1Time"]) else None,
+                    sector2=float(lap_a_data["Sector2Time"].total_seconds()) if pd.notna(lap_a_data["Sector2Time"]) else None,
+                    sector3=float(lap_a_data["Sector3Time"].total_seconds()) if pd.notna(lap_a_data["Sector3Time"]) else None,
+                )
+            except:
+                sectors_a = SectorTimes()
 
-            sectors_b = SectorTimes(
-                sector1=lap_b_data["Sector1Time"].total_seconds() if pd.notna(lap_b_data["Sector1Time"]) else None,
-                sector2=lap_b_data["Sector2Time"].total_seconds() if pd.notna(lap_b_data["Sector2Time"]) else None,
-                sector3=lap_b_data["Sector3Time"].total_seconds() if pd.notna(lap_b_data["Sector3Time"]) else None,
-            )
-            
-            return TelemetryComparison(
-                driverA=telemetry_a,
-                driverB=telemetry_b,
-                delta=delta,
-                sectorsA=sectors_a,
-                sectorsB=sectors_b,
-            )
-        except Exception as e:
-            print(f"Error fetching telemetry: {e}")
-            raise
+            try:
+                sectors_b = SectorTimes(
+                    sector1=float(lap_b_data["Sector1Time"].total_seconds()) if pd.notna(lap_b_data["Sector1Time"]) else None,
+                    sector2=float(lap_b_data["Sector2Time"].total_seconds()) if pd.notna(lap_b_data["Sector2Time"]) else None,
+                    sector3=float(lap_b_data["Sector3Time"].total_seconds()) if pd.notna(lap_b_data["Sector3Time"]) else None,
+                )
+            except:
+                sectors_b = SectorTimes()
     
     def _process_telemetry(
         self,
