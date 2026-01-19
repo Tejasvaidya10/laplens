@@ -23,6 +23,11 @@ from app.models.schemas import (
     HealthResponse,
     ApiResponse,
     RateLimitInfo,
+    LapTimePoint,
+    StintSummary,
+    DriverRacePace,
+    RacePaceComparison,
+    RacePaceRequest,
 )
 
 __all__ = [
@@ -48,4 +53,10 @@ __all__ = [
     "HealthResponse",
     "ApiResponse",
     "RateLimitInfo",
+    "SectorTimes",
+    "LapTimePoint",
+    "StintSummary",
+    "DriverRacePace",
+    "RacePaceComparison",
+    "RacePaceRequest",
 ]
