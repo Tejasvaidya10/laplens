@@ -208,16 +208,17 @@ class FastF1Service:
             delta = self._calculate_delta(tel_a, tel_b, max_points)
             
             # Extract sector times
+                     
             sectors_a = SectorTimes(
-                sector1=lap_a_data["Sector1Time"].total_seconds() if pd.notna(lap_a_data.get("Sector1Time")) else None,
-                sector2=lap_a_data["Sector2Time"].total_seconds() if pd.notna(lap_a_data.get("Sector2Time")) else None,
-                sector3=lap_a_data["Sector3Time"].total_seconds() if pd.notna(lap_a_data.get("Sector3Time")) else None,
+                sector1=lap_a_data["Sector1Time"].total_seconds() if pd.notna(lap_a_data["Sector1Time"]) else None,
+                sector2=lap_a_data["Sector2Time"].total_seconds() if pd.notna(lap_a_data["Sector2Time"]) else None,
+                sector3=lap_a_data["Sector3Time"].total_seconds() if pd.notna(lap_a_data["Sector3Time"]) else None,
             )
-            
+
             sectors_b = SectorTimes(
-                sector1=lap_b_data["Sector1Time"].total_seconds() if pd.notna(lap_b_data.get("Sector1Time")) else None,
-                sector2=lap_b_data["Sector2Time"].total_seconds() if pd.notna(lap_b_data.get("Sector2Time")) else None,
-                sector3=lap_b_data["Sector3Time"].total_seconds() if pd.notna(lap_b_data.get("Sector3Time")) else None,
+                sector1=lap_b_data["Sector1Time"].total_seconds() if pd.notna(lap_b_data["Sector1Time"]) else None,
+                sector2=lap_b_data["Sector2Time"].total_seconds() if pd.notna(lap_b_data["Sector2Time"]) else None,
+                sector3=lap_b_data["Sector3Time"].total_seconds() if pd.notna(lap_b_data["Sector3Time"]) else None,
             )
             
             return TelemetryComparison(
