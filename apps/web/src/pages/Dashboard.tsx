@@ -244,7 +244,9 @@ export function Dashboard() {
               </div>
             </div>
 
-{/* Chart */}
+            {/* Content */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              {/* Chart */}
               <div className="xl:col-span-2">
                 <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
                   {activeTab === 'speed' && <SpeedChart data={telemetry} />}
