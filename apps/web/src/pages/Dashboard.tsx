@@ -173,7 +173,7 @@ export function Dashboard() {
 
   // Landing page
   if (viewState === 'landing') {
-    return <LandingPage onOpenApp={() => setViewState('app')} />
+    return <LandingPage onOpenApp={() => { useSessionStore.getState().reset(); setViewState('app'); }} />
   }
 
   // Loading state
