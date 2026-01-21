@@ -12,6 +12,22 @@ interface RaceStoryTimelineProps {
   isLoading?: boolean
 }
 
+// Format seconds to readable time (e.g., 4575.7 -> "1:16:15.7" or 65.3 -> "1:05.3")
+function formatGap(seconds: number): string {
+  if (seconds < 60) {
+    return `${seconds.toFixed(1)}s`
+  } else if (seconds < 3600) {
+    const mins = Math.floor(seconds / 60)
+    const secs = (seconds % 60).toFixed(1)
+    return `${mins}:${secs.padStart(4, '0')}`
+  } else {
+    const hours = Math.floor(seconds / 3600)
+    const mins = Math.floor((seconds % 3600) / 60)
+    const secs = (seconds % 60).toFixed(1)
+    return `${hours}:${mins.toString().padStart(2, '0')}:${secs.padStart(4, '0')}`
+  }
+}
+
 export function RaceStoryTimeline({ events, isLoading }: RaceStoryTimelineProps) {
   if (isLoading) {
     return (
@@ -80,17 +96,43 @@ export function generateRaceStoryEvents(
     })
   }
 
-  // Pit stops from strategy data
-  if (strategyData?.pitStops) {
-    const allPitStops = strategyData.pitStops
-      .filter((p: any) => p.driver === driverA || p.driver === driverB)
-      .sort((a: any, b: any) => a.lap - b.lap)
+  // Derive pit stops from stints data
+  if (strategyData?.stints) {
+    const driverStints = strategyData.stints.filter(
+      (s: any) => s.driver === driverA || s.driver === driverB
+    )
+    
+    // Group by driver
+    const stintsByDriver: Record<string, any[]> = {}
+    driverStints.forEach((stint: any) => {
+      if (!stintsByDriver[stint.driver]) {
+        stintsByDriver[stint.driver] = []
+      }
+      stintsByDriver[stint.driver].push(stint)
+    })
 
-    allPitStops.forEach((pit: any) => {
+    // Find pit stops (transition between stints)
+    const pitStops: { driver: string; lap: number; newCompound: string }[] = []
+    
+    Object.entries(stintsByDriver).forEach(([driver, stints]) => {
+      const sorted = stints.sort((a: any, b: any) => a.stintNumber - b.stintNumber)
+      for (let i = 1; i < sorted.length; i++) {
+        pitStops.push({
+          driver,
+          lap: sorted[i].startLap,
+          newCompound: sorted[i].compound,
+        })
+      }
+    })
+
+    // Sort pit stops by lap
+    pitStops.sort((a, b) => a.lap - b.lap)
+
+    pitStops.forEach((pit) => {
       events.push({
         lap: `Lap ${pit.lap}`,
         title: `${pit.driver} Pit Stop`,
-        content: `${pit.driver} pits for ${pit.newCompound || 'new tires'}. Stationary time: ${pit.duration?.toFixed(1) || '?'}s.`,
+        content: `${pit.driver} pits for ${pit.newCompound || 'new tires'}.`,
         highlight: pit.driver === driverA,
       })
     })
@@ -102,12 +144,13 @@ export function generateRaceStoryEvents(
       (a: any, b: any) => a.totalRaceTime - b.totalRaceTime
     )
     const winner = sorted[0]
-    const gap = (sorted[1].totalRaceTime - sorted[0].totalRaceTime).toFixed(1)
+    const gapSeconds = sorted[1].totalRaceTime - sorted[0].totalRaceTime
+    const gapFormatted = formatGap(gapSeconds)
 
     events.push({
       lap: 'Finish',
       title: 'Checkered Flag',
-      content: `${winner.driver} takes the win, finishing ${gap}s ahead of ${sorted[1].driver}.`,
+      content: `${winner.driver} takes the win, finishing ${gapFormatted} ahead of ${sorted[1].driver}.`,
       highlight: true,
     })
   }
