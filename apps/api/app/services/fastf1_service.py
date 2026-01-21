@@ -213,14 +213,18 @@ class FastF1Service:
             # Extract sector times
             try:
                 sectors_a = SectorTimes(
-                    ...
+                    sector1=float(lap_a_data["Sector1Time"].total_seconds()) if pd.notna(lap_a_data["Sector1Time"]) else None,
+                    sector2=float(lap_a_data["Sector2Time"].total_seconds()) if pd.notna(lap_a_data["Sector2Time"]) else None,
+                    sector3=float(lap_a_data["Sector3Time"].total_seconds()) if pd.notna(lap_a_data["Sector3Time"]) else None,
                 )
             except:
                 sectors_a = SectorTimes()
 
             try:
                 sectors_b = SectorTimes(
-                    ...
+                    sector1=float(lap_b_data["Sector1Time"].total_seconds()) if pd.notna(lap_b_data["Sector1Time"]) else None,
+                    sector2=float(lap_b_data["Sector2Time"].total_seconds()) if pd.notna(lap_b_data["Sector2Time"]) else None,
+                    sector3=float(lap_b_data["Sector3Time"].total_seconds()) if pd.notna(lap_b_data["Sector3Time"]) else None,
                 )
             except:
                 sectors_b = SectorTimes()

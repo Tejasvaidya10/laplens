@@ -11,6 +11,7 @@ import { StintTable } from '@/components/StintTable'
 import { RaceStoryTimeline, generateRaceStoryEvents } from '@/components/RaceStoryTimeline'
 import { Badge } from '@/components/ui/Badge'
 import { SpeedChart, ThrottleBrakeChart, GearChart, DeltaChart, RacePaceChart } from '@/components/charts'
+import SectorComparison from '@/components/SectorComparison'
 import {
   getSpeedInsights,
   getThrottleBrakeInsights,
@@ -243,9 +244,7 @@ export function Dashboard() {
               </div>
             </div>
 
-            {/* Content */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              {/* Chart */}
+{/* Chart */}
               <div className="xl:col-span-2">
                 <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
                   {activeTab === 'speed' && <SpeedChart data={telemetry} />}
@@ -257,6 +256,18 @@ export function Dashboard() {
                     <RaceStoryTimeline events={storyEvents} />
                   )}
                 </div>
+                
+                {/* Sector Comparison - show on speed/delta tabs */}
+                {(activeTab === 'speed' || activeTab === 'delta') && telemetry?.sectorsA && (
+                  <div className="mt-6">
+                    <SectorComparison
+                      sectorsA={telemetry.sectorsA}
+                      sectorsB={telemetry.sectorsB}
+                      driverA={driverA || ''}
+                      driverB={driverB || ''}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Insights Panel */}
