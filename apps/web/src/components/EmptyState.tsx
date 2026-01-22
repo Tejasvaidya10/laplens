@@ -2,7 +2,7 @@ import { Zap } from 'lucide-react'
 import { glossaryTerms, quickStarts } from '@/lib/design-tokens'
 
 interface EmptyStateProps {
-  onQuickStart?: (preset: { season: number; event: string; session: string }) => void
+  onQuickStart?: (preset: { season: number; event: string; session: string; driverA?: string; driverB?: string }) => void
 }
 
 export function EmptyState({ onQuickStart }: EmptyStateProps) {
@@ -41,7 +41,7 @@ export function EmptyState({ onQuickStart }: EmptyStateProps) {
           <h3 className="text-sm font-medium text-zinc-500 uppercase tracking-wider mb-3">
             Quick Start
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {quickStarts.map((item, i) => (
               <button
                 key={i}

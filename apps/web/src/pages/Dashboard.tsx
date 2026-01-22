@@ -29,7 +29,7 @@ export function Dashboard() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [loadingStep, setLoadingStep] = useState(0)
 
-  const { season, event, session, driverA, driverB, setSeason, setEvent, setSession } = useSessionStore()
+  const { season, event, session, driverA, driverB, setSeason, setEvent, setSession, setDriverA, setDriverB } = useSessionStore()
 
   const hasAllSelections = season && event && session && driverA && driverB
 
@@ -108,10 +108,12 @@ export function Dashboard() {
     }
   }
 
-  const handleQuickStart = (preset: { season: number; event: string; session: string }) => {
+  const handleQuickStart = (preset: { season: number; event: string; session: string; driverA?: string; driverB?: string }) => {
     setSeason(preset.season)
     setEvent(preset.event)
     setSession(preset.session)
+    if (preset.driverA) setDriverA(preset.driverA)
+    if (preset.driverB) setDriverB(preset.driverB)
     setViewState('app')
   }
 

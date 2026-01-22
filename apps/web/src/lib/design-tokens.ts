@@ -74,12 +74,12 @@ export const glossaryTerms = [
 
 // Quick start presets
 export const quickStarts = [
-  { race: '2024 Bahrain GP', session: 'Qualifying', preset: { season: 2024, event: 'Bahrain Grand Prix', session: 'Q' } },
-  { race: '2024 Monaco GP', session: 'Race', preset: { season: 2024, event: 'Monaco Grand Prix', session: 'R' } },
-  { race: '2023 Abu Dhabi GP', session: 'Race', preset: { season: 2023, event: 'Abu Dhabi Grand Prix', session: 'R' } },
-  { race: '2023 Spa GP', session: 'Qualifying', preset: { season: 2023, event: 'Belgian Grand Prix', session: 'Q' } },
+  { race: "2021 Bahrain GP", session: "Race", preset: { season: 2021, event: "Bahrain Grand Prix", session: "R", driverA: "HAM", driverB: "VER" } },
+  { race: "2021 French GP", session: "Race", preset: { season: 2021, event: "French Grand Prix", session: "R", driverA: "VER", driverB: "HAM" } },
+  { race: "2021 Abu Dhabi GP", session: "Race", preset: { season: 2021, event: "Abu Dhabi Grand Prix", session: "R", driverA: "VER", driverB: "HAM" } },
+  { race: "2023 Singapore GP", session: "Race", preset: { season: 2023, event: "Singapore Grand Prix", session: "R", driverA: "SAI", driverB: "NOR" } },
+  { race: "2024 Austria GP", session: "Race", preset: { season: 2024, event: "Austrian Grand Prix", session: "R", driverA: "VER", driverB: "NOR" } },
 ]
-
 // Chart question framing
 export const chartQuestions = {
   speed: {
