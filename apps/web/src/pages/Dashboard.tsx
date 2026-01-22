@@ -108,13 +108,42 @@ export function Dashboard() {
     }
   }
 
-  const handleQuickStart = (preset: { season: number; event: string; session: string; driverA?: string; driverB?: string }) => {
+  const handleQuickStart = async (preset: { season: number; event: string; session: string; driverA?: string; driverB?: string }) => {
     setSeason(preset.season)
     setEvent(preset.event)
     setSession(preset.session)
     if (preset.driverA) setDriverA(preset.driverA)
     if (preset.driverB) setDriverB(preset.driverB)
-    setViewState('app')
+    
+    // Auto-run analysis if drivers are preset
+    if (preset.driverA && preset.driverB) {
+      setIsAnalyzing(true)
+      setViewState("loading")
+      setLoadingStep(0)
+      
+      try {
+        setLoadingStep(1)
+        await refetchTelemetry()
+        
+        setLoadingStep(2)
+        if (preset.session === "R") {
+          await refetchRacePace()
+          await refetchStrategy()
+          await refetchPositions()
+        }
+        
+        setLoadingStep(3)
+        await new Promise((r) => setTimeout(r, 500))
+        setViewState("app")
+      } catch (error) {
+        console.error("Quick start analysis failed:", error)
+        setViewState("app")
+      } finally {
+        setIsAnalyzing(false)
+      }
+    } else {
+      setViewState("app")
+    }
   }
 
   // Generate insights
