@@ -31,7 +31,8 @@ export function DeltaChart({ data, height = 300 }: DeltaChartProps) {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">Lap Time Delta ({driverACode} vs {driverBCode})</CardTitle>
+        <CardTitle className="text-base">Fastest Lap Delta ({driverACode} vs {driverBCode})</CardTitle>
+        <p className="text-xs text-zinc-500">Time difference during each driver's fastest lap</p>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={height}>
