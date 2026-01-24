@@ -119,17 +119,32 @@ export function Dashboard() {
       
       try {
         setLoadingStep(1)
-        await refetchTelemetry()
+        // Call API directly with preset values
+        await api.compareTelemetry({
+          season: preset.season,
+          event: preset.event,
+          session: preset.session,
+          driverA: preset.driverA,
+          driverB: preset.driverB,
+        })
         
         setLoadingStep(2)
+        if (preset.session === "R") {
+          await api.getRacePace(preset.season, preset.event, preset.session, [preset.driverA, preset.driverB])
+          await api.getStrategy(preset.season, preset.event, preset.session)
+          await api.getPositions(preset.season, preset.event, preset.session)
+        }
+        
+        setLoadingStep(3)
+        // Small delay then refetch to populate React Query cache
+        await new Promise((r) => setTimeout(r, 300))
+        await refetchTelemetry()
         if (preset.session === "R") {
           await refetchRacePace()
           await refetchStrategy()
           await refetchPositions()
         }
         
-        setLoadingStep(3)
-        await new Promise((r) => setTimeout(r, 500))
         setViewState("app")
       } catch (error) {
         console.error("Quick start analysis failed:", error)
