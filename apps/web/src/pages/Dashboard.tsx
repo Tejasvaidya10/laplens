@@ -203,11 +203,11 @@ export function Dashboard() {
       ]
     }
 
-    if (activeTab === 'delta' && telemetry?.delta?.length > 0) {
-      const finalDelta = telemetry.delta[telemetry.delta.length - 1].delta
+    if (activeTab === 'delta' && telemetry?.driverA?.lapTime && telemetry?.driverB?.lapTime) {
+      const lapDelta = telemetry.driverA.lapTime - telemetry.driverB.lapTime
       return [
-        { label: 'Final Delta', value: `${finalDelta > 0 ? '+' : ''}${finalDelta.toFixed(3)}`, unit: 's' },
-        { label: '+ means', value: telemetry.driverA?.driver || 'A', unit: 'ahead' },
+        { label: 'Lap Delta', value: `${lapDelta > 0 ? '+' : ''}${lapDelta.toFixed(3)}`, unit: 's' },
+        { label: '- means', value: telemetry.driverA?.driver || 'A', unit: 'faster' },
       ]
     }
 

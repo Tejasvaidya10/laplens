@@ -313,7 +313,7 @@ class FastF1Service:
             for dist, t_a, t_b in zip(common_distances, time_a, time_b):
                 delta_points.append(DeltaPoint(
                     distance=float(dist),
-                    delta=float(t_b - t_a)  # positive = A is ahead
+                    delta=float(t_a - t_b)  # negative = A is faster
                 ))
             
             return delta_points
