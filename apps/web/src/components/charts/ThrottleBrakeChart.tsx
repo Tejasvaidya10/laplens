@@ -7,7 +7,6 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-  ReferenceArea,
 } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useMemo } from 'react'
@@ -15,12 +14,6 @@ import { useMemo } from 'react'
 interface ThrottleBrakeChartProps {
   data: any
   height?: number
-}
-
-interface BrakeZone {
-  startDistance: number
-  endDistance: number
-  driver: string
 }
 
 export function ThrottleBrakeChart({ data, height = 300 }: ThrottleBrakeChartProps) {
@@ -31,126 +24,92 @@ export function ThrottleBrakeChart({ data, height = 300 }: ThrottleBrakeChartPro
   const driverACode = data.driverA.driver || 'Driver A'
   const driverBCode = data.driverB.driver || 'Driver B'
 
-  // Detect if brake data is binary (0/1) or percentage (0-100)
-  const { isBinaryBrake, brakeZonesA, brakeZonesB, brakeStats } = useMemo(() => {
-    const allBrakeValuesA = data.driverA.data.map((p: any) => p.brake).filter((v: number) => v !== null)
-    const allBrakeValuesB = data.driverB.data.map((p: any) => p.brake).filter((v: number) => v !== null)
-    
-    const maxBrakeA = Math.max(...allBrakeValuesA)
-    const maxBrakeB = Math.max(...allBrakeValuesB)
-    const isBinary = maxBrakeA <= 1 && maxBrakeB <= 1
-
-    // Extract brake zones (continuous braking sections)
-    const extractBrakeZones = (points: any[], driver: string): BrakeZone[] => {
-      const zones: BrakeZone[] = []
-      let inBrakeZone = false
-      let zoneStart = 0
-
-      points.forEach((point, i) => {
-        const braking = isBinary ? point.brake > 0 : point.brake > 10
-        
-        if (braking && !inBrakeZone) {
-          inBrakeZone = true
-          zoneStart = point.distance
-        } else if (!braking && inBrakeZone) {
-          inBrakeZone = false
-          zones.push({
-            startDistance: zoneStart,
-            endDistance: point.distance,
-            driver,
-          })
-        }
-      })
-
-      // Close final zone if still braking
-      if (inBrakeZone && points.length > 0) {
-        zones.push({
-          startDistance: zoneStart,
-          endDistance: points[points.length - 1].distance,
-          driver,
-        })
-      }
-
-      return zones
+  // Prepare chart data with separate series for braking/not braking
+  const { chartData, brakeStats } = useMemo(() => {
+    const isBraking = (brake: number, isBinary: boolean) => {
+      return isBinary ? brake > 0 : brake > 10
     }
 
-    const zonesA = extractBrakeZones(data.driverA.data, driverACode)
-    const zonesB = extractBrakeZones(data.driverB.data, driverBCode)
+    // Detect if brake data is binary
+    const allBrakeValuesA = data.driverA.data.map((p: any) => p.brake).filter((v: number) => v !== null)
+    const allBrakeValuesB = data.driverB.data.map((p: any) => p.brake).filter((v: number) => v !== null)
+    const maxBrakeA = Math.max(...allBrakeValuesA)
+    const maxBrakeB = Math.max(...allBrakeValuesB)
+    const isBinaryA = maxBrakeA <= 1
+    const isBinaryB = maxBrakeB <= 1
 
-    // Calculate brake stats
-    const totalBrakeDistanceA = zonesA.reduce((sum, z) => sum + (z.endDistance - z.startDistance), 0)
-    const totalBrakeDistanceB = zonesB.reduce((sum, z) => sum + (z.endDistance - z.startDistance), 0)
+    let brakeZonesA = 0
+    let brakeZonesB = 0
+    let totalBrakeDistA = 0
+    let totalBrakeDistB = 0
+    let wasInBrakeA = false
+    let wasInBrakeB = false
+    let brakeStartA = 0
+    let brakeStartB = 0
+
+    const processed = data.driverA.data.map((point: any, index: number) => {
+      const pointB = data.driverB.data[index]
+      const brakingA = isBraking(point.brake, isBinaryA)
+      const brakingB = pointB ? isBraking(pointB.brake, isBinaryB) : false
+
+      // Track brake zones for A
+      if (brakingA && !wasInBrakeA) {
+        brakeZonesA++
+        brakeStartA = point.distance
+      }
+      if (!brakingA && wasInBrakeA) {
+        totalBrakeDistA += point.distance - brakeStartA
+      }
+      wasInBrakeA = brakingA
+
+      // Track brake zones for B
+      if (brakingB && !wasInBrakeB) {
+        brakeZonesB++
+        brakeStartB = point.distance
+      }
+      if (!brakingB && wasInBrakeB) {
+        totalBrakeDistB += point.distance - brakeStartB
+      }
+      wasInBrakeB = brakingB
+
+      return {
+        distance: point.distance,
+        // Driver A: throttle when NOT braking
+        [`${driverACode}`]: !brakingA ? point.throttle : null,
+        // Driver A: throttle when braking (shown in different color)
+        [`${driverACode} Braking`]: brakingA ? point.throttle : null,
+        // Driver B: throttle when NOT braking
+        [`${driverBCode}`]: !brakingB ? (pointB?.throttle ?? null) : null,
+        // Driver B: throttle when braking
+        [`${driverBCode} Braking`]: brakingB ? (pointB?.throttle ?? null) : null,
+      }
+    })
 
     return {
-      isBinaryBrake: isBinary,
-      brakeZonesA: zonesA,
-      brakeZonesB: zonesB,
+      chartData: processed,
       brakeStats: {
-        zonesA: zonesA.length,
-        zonesB: zonesB.length,
-        totalDistanceA: totalBrakeDistanceA,
-        totalDistanceB: totalBrakeDistanceB,
+        zonesA: brakeZonesA,
+        zonesB: brakeZonesB,
+        totalDistanceA: totalBrakeDistA,
+        totalDistanceB: totalBrakeDistB,
       }
     }
   }, [data, driverACode, driverBCode])
-
-  // Prepare chart data - scale binary brake to 100 for visibility
-  const chartData = data.driverA.data.map((point: any, index: number) => {
-    const brakeA = point.brake
-    const brakeB = data.driverB.data[index]?.brake ?? null
-    
-    return {
-      distance: point.distance,
-      [`${driverACode} Throttle`]: point.throttle,
-      [`${driverACode} Brake`]: isBinaryBrake ? (brakeA > 0 ? 100 : 0) : brakeA,
-      [`${driverBCode} Throttle`]: data.driverB.data[index]?.throttle ?? null,
-      [`${driverBCode} Brake`]: isBinaryBrake ? (brakeB > 0 ? 100 : 0) : brakeB,
-    }
-  })
 
   return (
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center justify-between">
           <span>Throttle & Brake</span>
-          {isBinaryBrake && (
-            <span className="text-xs font-normal text-muted-foreground">
-              Binary brake data (on/off)
-            </span>
-          )}
+          <span className="text-xs font-normal text-muted-foreground">
+            Line color changes to red/orange when braking
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={height}>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-            
-            {/* Brake zones as shaded areas for Driver A */}
-            {brakeZonesA.map((zone, i) => (
-              <ReferenceArea
-                key={`brake-a-${i}`}
-                x1={zone.startDistance}
-                x2={zone.endDistance}
-                y1={0}
-                y2={100}
-                fill="#3b82f6"
-                fillOpacity={0.1}
-              />
-            ))}
-            
-            {/* Brake zones as shaded areas for Driver B */}
-            {brakeZonesB.map((zone, i) => (
-              <ReferenceArea
-                key={`brake-b-${i}`}
-                x1={zone.startDistance}
-                x2={zone.endDistance}
-                y1={0}
-                y2={100}
-                fill="#22c55e"
-                fillOpacity={0.1}
-              />
-            ))}
-
             <XAxis
               dataKey="distance"
               tickFormatter={(value) => `${(value / 1000).toFixed(1)}km`}
@@ -173,43 +132,55 @@ export function ThrottleBrakeChart({ data, height = 300 }: ThrottleBrakeChartPro
                 borderRadius: '8px',
               }}
               formatter={(value: number, name: string) => {
-                if (name.includes('Brake') && isBinaryBrake) {
-                  return [value > 0 ? 'ON' : 'OFF', name]
-                }
-                return [`${value?.toFixed(0)}%`, name]
+                const braking = name.includes('Braking')
+                const displayName = name.replace(' Braking', '')
+                return [`${value?.toFixed(0)}% ${braking ? '(braking)' : ''}`, displayName]
               }}
               labelFormatter={(value) => `Distance: ${(value / 1000).toFixed(2)} km`}
             />
-            <Legend />
+            <Legend 
+              payload={[
+                { value: `${driverACode} Throttle`, type: 'line', color: '#3b82f6' },
+                { value: `${driverACode} Braking`, type: 'line', color: '#ef4444' },
+                { value: `${driverBCode} Throttle`, type: 'line', color: '#22c55e' },
+                { value: `${driverBCode} Braking`, type: 'line', color: '#f97316' },
+              ]}
+            />
+            {/* Driver A - normal throttle (blue) */}
             <Line 
               type="monotone" 
-              dataKey={`${driverACode} Throttle`} 
+              dataKey={driverACode}
               stroke="#3b82f6" 
               dot={false} 
-              strokeWidth={2} 
+              strokeWidth={2}
+              connectNulls={false}
             />
+            {/* Driver A - throttle while braking (red) */}
             <Line 
               type="monotone" 
-              dataKey={`${driverACode} Brake`} 
+              dataKey={`${driverACode} Braking`}
               stroke="#ef4444" 
               dot={false} 
               strokeWidth={2}
-              strokeDasharray={isBinaryBrake ? "5 5" : undefined}
+              connectNulls={false}
             />
+            {/* Driver B - normal throttle (green) */}
             <Line 
               type="monotone" 
-              dataKey={`${driverBCode} Throttle`} 
+              dataKey={driverBCode}
               stroke="#22c55e" 
               dot={false} 
-              strokeWidth={2} 
+              strokeWidth={2}
+              connectNulls={false}
             />
+            {/* Driver B - throttle while braking (orange) */}
             <Line 
               type="monotone" 
-              dataKey={`${driverBCode} Brake`} 
+              dataKey={`${driverBCode} Braking`}
               stroke="#f97316" 
               dot={false} 
               strokeWidth={2}
-              strokeDasharray={isBinaryBrake ? "5 5" : undefined}
+              connectNulls={false}
             />
           </LineChart>
         </ResponsiveContainer>
