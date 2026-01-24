@@ -256,7 +256,7 @@ export function getDeltaInsights(data: TelemetryData): string[] {
   }
 
   if (leadChanges > 0) {
-    insights.push(`Lead changes ${leadChanges} time${leadChanges > 1 ? 's' : ''} around the lap`)
+    insights.push(`Time advantage switched ${leadChanges} time${leadChanges > 1 ? 's' : ''} during lap`)
   }
 
   return insights.slice(0, 4)
