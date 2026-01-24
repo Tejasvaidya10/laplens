@@ -109,11 +109,7 @@ export function Dashboard() {
   }
 
   const handleQuickStart = async (preset: { season: number; event: string; session: string; driverA?: string; driverB?: string }) => {
-    setSeason(preset.season)
-    setEvent(preset.event)
-    setSession(preset.session)
-    if (preset.driverA) setDriverA(preset.driverA)
-    if (preset.driverB) setDriverB(preset.driverB)
+    useSessionStore.getState().setAll(preset)
     
     // Auto-run analysis if drivers are preset
     if (preset.driverA && preset.driverB) {
