@@ -203,10 +203,11 @@ export function Dashboard() {
       ]
     }
 
-    if (activeTab === 'delta' && dA?.lapTime && dB?.lapTime) {
-      const diff = dA.lapTime - dB.lapTime
+    if (activeTab === 'delta' && telemetry?.delta?.length > 0) {
+      const finalDelta = telemetry.delta[telemetry.delta.length - 1].delta
       return [
-        { label: 'Lap Delta', value: `${diff > 0 ? '+' : ''}${diff.toFixed(3)}`, unit: 's' },
+        { label: 'Final Delta', value: `${finalDelta > 0 ? '+' : ''}${finalDelta.toFixed(3)}`, unit: 's' },
+        { label: '+ means', value: telemetry.driverA?.driver || 'A', unit: 'ahead' },
       ]
     }
 
