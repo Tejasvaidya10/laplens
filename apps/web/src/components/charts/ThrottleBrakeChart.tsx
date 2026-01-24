@@ -100,7 +100,7 @@ export function ThrottleBrakeChart({ data, height = 300 }: ThrottleBrakeChartPro
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center justify-between">
-          <span>Throttle & Brake</span>
+          <span>Throttle & Brake (Fastest Lap)</span>
           <span className="text-xs font-normal text-muted-foreground">
             Line color changes to red/orange when braking
           </span>
