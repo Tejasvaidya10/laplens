@@ -8,7 +8,6 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-  ReferenceLine,
   ReferenceArea,
 } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -61,6 +60,9 @@ const COMPOUND_COLORS: Record<string, string> = {
   WET: '#3b82f6',
   UNKNOWN: '#6b7280',
 }
+
+// Driver colors - consistent blue/green
+const DRIVER_COLORS = ['#3b82f6', '#22c55e']
 
 // Format lap time as M:SS.mmm
 const formatLapTime = (seconds: number): string => {
@@ -159,7 +161,7 @@ export function RacePaceChart({ data, height = 400 }: RacePaceChartProps) {
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
             
-            {/* Safety car periods would be shown as shaded areas */}
+            {/* Safety car periods shown as shaded areas */}
             {data.safetyCarLaps.map((lap, i) => (
               <ReferenceArea
                 key={`sc-${i}`}
@@ -195,12 +197,12 @@ export function RacePaceChart({ data, height = 400 }: RacePaceChartProps) {
             <Tooltip content={<CustomTooltip />} />
             <Legend />
             
-            {data.drivers.map((driver) => (
+            {data.drivers.map((driver, index) => (
               <Line
                 key={driver.driver}
                 type="monotone"
                 dataKey={driver.driver}
-                stroke={driver.teamColor}
+                stroke={DRIVER_COLORS[index] || DRIVER_COLORS[0]}
                 dot={false}
                 strokeWidth={2}
                 connectNulls
@@ -226,7 +228,7 @@ export function RacePaceChart({ data, height = 400 }: RacePaceChartProps) {
                 </tr>
               </thead>
               <tbody>
-                {data.drivers.flatMap((driver) =>
+                {data.drivers.flatMap((driver, driverIndex) =>
                   driver.stints.map((stint) => (
                     <tr
                       key={`${driver.driver}-${stint.stintNumber}`}
@@ -235,7 +237,7 @@ export function RacePaceChart({ data, height = 400 }: RacePaceChartProps) {
                       <td className="py-2 px-2">
                         <span
                           className="inline-block w-2 h-2 rounded-full mr-2"
-                          style={{ backgroundColor: driver.teamColor }}
+                          style={{ backgroundColor: DRIVER_COLORS[driverIndex] || DRIVER_COLORS[0] }}
                         />
                         {driver.driver}
                       </td>
@@ -261,7 +263,7 @@ export function RacePaceChart({ data, height = 400 }: RacePaceChartProps) {
                         {formatLapTime(stint.bestLapTime)}
                       </td>
                       <td className="py-2 px-2 text-right font-mono">
-                        <span className={stint.degRate > 0.1 ? 'text-red-400' : stint.degRate < 0.05 ? 'text-green-400' : ''}>
+                        <span className={stint.degRate > 0.05 ? 'text-red-400' : stint.degRate < -0.01 ? 'text-green-400' : 'text-zinc-400'}>
                           {stint.degRate > 0 ? '+' : ''}{stint.degRate.toFixed(3)}s
                         </span>
                       </td>
@@ -271,6 +273,9 @@ export function RacePaceChart({ data, height = 400 }: RacePaceChartProps) {
               </tbody>
             </table>
           </div>
+          <p className="text-xs text-zinc-500 mt-2">
+            Deg/Lap: Time lost per lap due to tire wear. Positive = slower each lap (normal). Negative = faster (track evolution or fuel burn).
+          </p>
         </div>
         
         {/* Tire Compound Legend */}

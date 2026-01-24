@@ -7,7 +7,6 @@ import { LandingPage } from '@/components/LandingPage'
 import { EmptyState } from '@/components/EmptyState'
 import { LoadingState } from '@/components/LoadingState'
 import { InsightsPanel } from '@/components/InsightsPanel'
-import { StintTable } from '@/components/StintTable'
 import { RaceStoryTimeline, generateRaceStoryEvents } from '@/components/RaceStoryTimeline'
 import { Badge } from '@/components/ui/Badge'
 import { SpeedChart, ThrottleBrakeChart, GearChart, DeltaChart, RacePaceChart } from '@/components/charts'
@@ -324,7 +323,6 @@ export function Dashboard() {
             {/* Stint Table (Race Pace tab only) */}
             {activeTab === 'pace' && stintData.length > 0 && (
               <div className="mt-6">
-                <StintTable stints={stintData} />
               </div>
             )}
           </>
