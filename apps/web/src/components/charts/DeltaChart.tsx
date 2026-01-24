@@ -65,6 +65,7 @@ export function DeltaChart({ data, height = 300 }: DeltaChartProps) {
             <Line type="monotone" dataKey="delta" stroke="#f59e0b" dot={false} strokeWidth={2} />
           </LineChart>
         </ResponsiveContainer>
+      <p className="text-xs text-zinc-500 mt-2">Note: Chart based on telemetry data, may differ slightly from official times</p>
       </CardContent>
     </Card>
   )
