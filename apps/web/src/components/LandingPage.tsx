@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BarChart3, BookOpen, ArrowRight, RotateCcw } from 'lucide-react'
+import { Zap, BarChart3, BookOpen, ArrowRight, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface LandingPageProps {
