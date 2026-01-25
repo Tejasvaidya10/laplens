@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Zap, BarChart3, BookOpen, ArrowRight, RotateCcw } from 'lucide-react'
+import { BarChart3, BookOpen, ArrowRight, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface LandingPageProps {
@@ -119,9 +119,7 @@ export function LandingPage({ onOpenApp }: LandingPageProps) {
       <nav className="border-b border-zinc-900">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white">
-              <Zap className="w-4 h-4" />
-            </div>
+            <img src="/logo.png" alt="LapLens" className="w-8 h-8 rounded-lg" />
             <span className="text-xl font-bold text-white">LapLens</span>
           </div>
           <div className="hidden md:flex items-center gap-8">
@@ -203,9 +201,7 @@ export function LandingPage({ onOpenApp }: LandingPageProps) {
       <footer className="border-t border-zinc-900 mt-16">
         <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-blue-500 flex items-center justify-center text-white">
-              <Zap className="w-3 h-3" />
-            </div>
+            <img src="/logo.png" alt="LapLens" className="w-6 h-6 rounded" />
             <span className="font-semibold text-white">LapLens</span>
           </div>
           <p className="text-sm text-zinc-600">

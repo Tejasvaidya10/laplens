@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Zap, ArrowLeftRight, Loader2, Play } from 'lucide-react'
+import { ArrowLeftRight, Loader2, Play } from 'lucide-react'
 import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { useSessionStore } from '@/hooks/use-session-store'
@@ -64,9 +64,7 @@ export function Sidebar({ onRunAnalysis, onLogoClick, isLoading }: SidebarProps)
         onClick={onLogoClick}
         className="flex items-center gap-2 mb-8 hover:opacity-80 transition-opacity"
       >
-        <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white">
-          <Zap className="w-4 h-4" />
-        </div>
+        <img src="/logo.png" alt="LapLens" className="w-8 h-8 rounded-lg" />
         <span className="text-lg font-bold text-white">LapLens</span>
       </button>
 

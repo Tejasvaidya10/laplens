@@ -1,4 +1,3 @@
-import { Zap } from 'lucide-react'
 import { glossaryTerms, quickStarts } from '@/lib/design-tokens'
 
 interface EmptyStateProps {
@@ -12,9 +11,7 @@ export function EmptyState({ onQuickStart }: EmptyStateProps) {
         {/* Welcome Card */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 mb-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center text-white">
-              <Zap className="w-5 h-5" />
-            </div>
+            <img src="/logo.png" alt="LapLens" className="w-10 h-10 rounded-lg" />
             <h2 className="text-xl font-bold text-white">Welcome to LapLens</h2>
           </div>
           <p className="text-zinc-400 mb-6">Get started in 3 simple steps:</p>
