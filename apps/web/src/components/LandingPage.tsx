@@ -61,7 +61,7 @@ function FlipCard({
           <ul className="space-y-2">
             {backContent.map((item, i) => (
               <li key={i} className="text-sm text-zinc-400 flex items-start gap-2">
-                <span className="text-blue-400 mt-1">&#8226;</span>
+                <span className="text-blue-400">•</span>
                 {item}
               </li>
             ))}
@@ -141,7 +141,7 @@ export function LandingPage({ onOpenApp }: LandingPageProps) {
         <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
           See the lap,
           <br />
-          <span className="text-blue-500">not just the result</span>
+          <span className="text-blue-500">not just the result.</span>
         </h1>
         <p className="text-xl text-zinc-400 max-w-2xl mx-auto mb-8">
           Compare F1 drivers with real telemetry data. Understand every braking zone,
