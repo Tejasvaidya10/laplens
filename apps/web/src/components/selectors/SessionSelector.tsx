@@ -12,6 +12,16 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useSessionStore } from '@/hooks/use-session-store'
 import { Loader2 } from 'lucide-react'
 
+const sessionDisplayName: Record<string, string> = {
+  FP1: "FP 1",
+  FP2: "FP 2",
+  FP3: "FP 3",
+  Q: "Qualifying",
+  SQ: "Sprint Qualifying",
+  S: "Sprint Race",
+  SS: "Sprint Race",
+  R: "Race",
+}
 export function SessionSelector() {
   const {
     season,
@@ -159,7 +169,7 @@ export function SessionSelector() {
             <SelectContent>
               {sessions?.map((s) => (
                 <SelectItem key={s.name} value={s.name}>
-                  {s.name}
+                  {sessionDisplayName[s.name] || s.name}
                 </SelectItem>
               ))}
             </SelectContent>
